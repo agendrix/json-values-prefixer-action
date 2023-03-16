@@ -1,11 +1,17 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: JSON values prefixer
+description: Prefix all values of a JSON array
 inputs:
-  milliseconds: # change this
+  file_path:
+    description: The JSON file path
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+  prefix:
+    description: The prefix
+    required: true
+  key:
+    description: |
+      Prefix all values corresponding the a certain key.
+      Can be used if your JSON array contains objects.
+    required: false
 runs:
-  using: 'node12'
-  main: 'dist/index.js'
+  using: node16
+  main: dist/index.js

@@ -1,18 +1,31 @@
 import * as core from "@actions/core";
-import { wait } from "./wait";
+import { readFileSync, writeFileSync } from "fs";
+import { validateRequiredInputs } from "../helpers/action/validateRequiredInputs";
 
-async function run(): Promise<void> {
+async function run() {
   try {
-    const ms: string = core.getInput("milliseconds");
-    core.debug(`Waiting ${ms} milliseconds ...`); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
+    validateRequiredInputs(["file_path", "prefix"]);
 
-    core.debug(new Date().toTimeString());
-    await wait(parseInt(ms, 10));
-    core.debug(new Date().toTimeString());
+    const filePath = core.getInput("file_path", { required: true });
+    const prefix = core.getInput("prefix", { required: true });
+    const key: string = core.getInput("key", { required: false });
 
-    core.setOutput("time", new Date().toTimeString());
+    const array = JSON.parse(readFileSync(filePath).toString());
+    array.reduce(
+      (accumulator: Array<string>, element: string | Record<string, any>) => {
+        if (key && typeof element == "object") {
+          element[key] = prefix + element[key];
+        } else {
+          element = prefix + element;
+        }
+        return [...accumulator, element];
+      },
+      []
+    );
+
+    writeFileSync(filePath, JSON.stringify(array));
   } catch (error) {
-    core.setFailed(error.message);
+    core.setFailed(`Action failed with error ${error}`);
   }
 }
 
